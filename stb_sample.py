@@ -83,4 +83,3 @@ for d in stb.findall('.//StbSecFigure'):
 print('-----StbSecSteelBeam')
 for d in stb.findall('.//StbSecSteelBeam'):
     print(d.tag,d.attrib)
-    
