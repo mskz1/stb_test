@@ -1,5 +1,8 @@
 import xml.etree.ElementTree as ET
 
+STB_NODE, STB_X_AXIS, STB_Y_AXIS, STB_STORY = 'StbNode', 'StbX_Axis', 'StbY_Axis', 'StbStory'
+STB_COLUMN, STB_GIRDER, STB_BEAM, STB_BRACE = 'StbColumn', 'StbGirder', 'StbBeam', 'StbBrace'
+
 
 class Stb:
     def __init__(self):
@@ -82,3 +85,35 @@ class Stb:
             for d in self.stb.iter('StbStory'):
                 if d.attrib['name'] == name:
                     return float(d.attrib['height'])
+
+    def get_max_column_id(self):
+        ids = []
+        if self.stb:
+            for n in self.stb.iter('StbColumn'):
+                ids.append(int(n.attrib['id']))
+        return max(ids)
+
+    def get_column_numbers(self):
+        ids = []
+        if self.stb:
+            for n in self.stb.iter('StbColumn'):
+                ids.append(int(n.attrib['id']))
+        return len(ids)
+
+    def get_element_attribute(self, tag, **kwargs):
+        for d in self.stb.iter(tag):
+            for k, v in kwargs.items():
+                if d.attrib[k] == v:
+                    return d.attrib
+
+    def get_elements(self,tag, **kwargs):
+        # **kwargsで複数のパラメーター条件を指定し、該当するエレメントのリストを返す？
+        # 複数の条件のいずれかに該当するものが集められる。
+        res = []
+        for k, v in kwargs.items():
+            for d in self.stb.iter(tag):
+                if d.attrib[k] == v:
+                    # res.append(d)
+                    res.append(d.attrib)
+        return res
+

@@ -20,7 +20,9 @@ print('-' * 20)
 # ------
 # 節点データ
 for n in stb.iter('StbNode'):
+    # print(type(n))  # <class 'xml.etree.ElementTree.Element'>
     print(n.tag, n.attrib)
+
 
 # X軸データ
 for gx in stb.iter('StbX_Axis'):
