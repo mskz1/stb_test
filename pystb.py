@@ -2,6 +2,9 @@ import xml.etree.ElementTree as ET
 
 STB_NODE, STB_X_AXIS, STB_Y_AXIS, STB_STORY = 'StbNode', 'StbX_Axis', 'StbY_Axis', 'StbStory'
 STB_COLUMN, STB_GIRDER, STB_BEAM, STB_BRACE = 'StbColumn', 'StbGirder', 'StbBeam', 'StbBrace'
+STB_SEC_COLUMN_S, STB_SEC_STEEL_COLUMN = 'StbSecColumn_S', 'StbSecSteelColumn'
+STB_SEC_BEAM_RC, STB_SEC_FIG = 'StbSecBeam_RC', 'StbSecFigure'
+STB_SEC_BEAM_S, STB_SEC_STEEL_BEAM = 'StbSecBeam_S', 'StbSecSteelBeam'
 
 
 class Stb:
@@ -12,11 +15,11 @@ class Stb:
         with open(file, 'r', encoding='Shift_JIS') as f:
             self.stb = ET.fromstring(f.read())
 
-    def get_max_node_id(self):
+    def get_max_id(self, tag):
         ids = []
         if self.stb:
-            for n in self.stb.iter('StbNode'):
-                ids.append(int(n.attrib['id']))
+            for d in self.stb.iter(tag):
+                ids.append(int(d.attrib['id']))
         return max(ids)
 
     def get_node_numbers(self):
@@ -47,17 +50,10 @@ class Stb:
                     return float(n.attrib['z'])
         return None
 
-    def get_x_axis_names(self):
+    def get_name_list(self, tag):
         res = []
         if self.stb:
-            for d in self.stb.iter('StbX_Axis'):
-                res.append(d.attrib['name'])
-        return res
-
-    def get_y_axis_names(self):
-        res = []
-        if self.stb:
-            for d in self.stb.iter('StbY_Axis'):
+            for d in self.stb.iter(tag):
                 res.append(d.attrib['name'])
         return res
 
@@ -73,25 +69,11 @@ class Stb:
                 if d.attrib['name'] == name:
                     return float(d.attrib['distance'])
 
-    def get_story_names(self):
-        res = []
-        if self.stb:
-            for d in self.stb.iter('StbStory'):
-                res.append(d.attrib['name'])
-        return res
-
     def get_story_height(self, name=''):
         if self.stb:
             for d in self.stb.iter('StbStory'):
                 if d.attrib['name'] == name:
                     return float(d.attrib['height'])
-
-    def get_max_column_id(self):
-        ids = []
-        if self.stb:
-            for n in self.stb.iter('StbColumn'):
-                ids.append(int(n.attrib['id']))
-        return max(ids)
 
     def get_column_numbers(self):
         ids = []
@@ -101,19 +83,17 @@ class Stb:
         return len(ids)
 
     def get_element_attribute(self, tag, **kwargs):
+        # **kwargsで複数のパラメーター条件を指定し、該当するエレメントの（アトリビュート）のリストを返す
+        # 複数の条件の全てに該当するものが集められる。
+        res = []
         for d in self.stb.iter(tag):
+            flg = []
             for k, v in kwargs.items():
                 if d.attrib[k] == v:
-                    return d.attrib
-
-    def get_elements(self,tag, **kwargs):
-        # **kwargsで複数のパラメーター条件を指定し、該当するエレメントのリストを返す？
-        # 複数の条件のいずれかに該当するものが集められる。
-        res = []
-        for k, v in kwargs.items():
-            for d in self.stb.iter(tag):
-                if d.attrib[k] == v:
-                    # res.append(d)
-                    res.append(d.attrib)
+                    flg.append(True)
+                else:
+                    flg.append(False)
+            if False not in flg:
+                # res.append(d) #あるいはエレメントを返す？
+                res.append(d.attrib)
         return res
-
