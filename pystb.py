@@ -15,6 +15,16 @@ class Stb:
         with open(file, 'r', encoding='Shift_JIS') as f:
             self.stb = ET.fromstring(f.read())
 
+    def save_stb(self, file):
+        # tree = ET.ElementTree(self.stb)
+        txt = ET.tostring(self.stb, encoding='unicode')
+        with open(file, 'w', encoding='Shift_JIS') as f:
+            # with open(file, 'w', encoding='UTF-8') as f:
+            # tree.write(f, encoding='Shift_JIS')
+            # LF = chr(10)
+            f.write('<?xml version="1.0" encoding="Shift_JIS"?>' + chr(10))
+            f.write(txt)
+
     def get_max_id(self, tag):
         ids = []
         if self.stb:

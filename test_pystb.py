@@ -19,16 +19,21 @@ def test_node_max(stb):
 
 
 def test_node_coordinates(stb):
-    assert stb.get_node_x(id=5) == approx(7200)
+    # assert stb.get_node_x(id=5) == approx(7200)
     assert stb.get_element_attribute(STB_NODE, id='5')[0]['x'] == '7200'
-    assert stb.get_node_y(id=5) == approx(0)
+    # assert stb.get_node_y(id=5) == approx(0)
     assert stb.get_element_attribute(STB_NODE, id='5')[0]['y'] == '0'
-    assert stb.get_node_z(id=5) == approx(150)
+    # assert stb.get_node_z(id=5) == approx(150)
     assert stb.get_element_attribute(STB_NODE, id='5')[0]['z'] == '150'
-    assert stb.get_node_x(id=104) == approx(21600)
-    assert stb.get_node_y(id=104) == approx(12600)
-    assert stb.get_node_z(id=350) == approx(4350)
+    # assert stb.get_node_x(id=104) == approx(21600)
+    assert stb.get_element_attribute(STB_NODE, id='104')[0]['x'] == '21600'
+    # assert stb.get_node_y(id=104) == approx(12600)
+    assert stb.get_element_attribute(STB_NODE, id='104')[0]['y'] == '12600'
+    # assert stb.get_node_z(id=350) == approx(4350)
+    assert stb.get_element_attribute(STB_NODE, id='350')[0]['z'] == '4350'
     assert stb.get_node_x(id=93) is None
+    # 該当データがない場合 [] が返る
+    assert stb.get_element_attribute(STB_NODE, id='93') == []
 
 
 def test_name_list(stb):
@@ -38,13 +43,15 @@ def test_name_list(stb):
 
 
 def test_axis_coordinates(stb):
-    assert stb.get_x_axis_distance('3') == approx(3600)
+    # assert stb.get_x_axis_distance('3') == approx(3600)
     assert stb.get_element_attribute(STB_X_AXIS, name='3')[0]['distance'] == '3600'
-    assert stb.get_y_axis_distance('G') == approx(10800)
+    # assert stb.get_y_axis_distance('G') == approx(10800)
+    assert stb.get_element_attribute(STB_Y_AXIS, name='G')[0]['distance'] == '10800'
 
 
 def test_story_height(stb):
-    assert stb.get_story_height('RF') == approx(4350)
+    # assert stb.get_story_height('RF') == approx(4350)
+    assert stb.get_element_attribute(STB_STORY, name='RF')[0]['height'] == '4350'
 
 
 def test_column_max(stb):
@@ -76,3 +83,8 @@ def test_get_elements(stb):
                                                                 'idNode_top': '118', 'rotate': '0', 'id_section': '1',
                                                                 'kind_structure': 'S', 'offset_X': '0', 'offset_Y': '0',
                                                                 'offset_bottom_Z': '-1050', 'condition_bottom': 'FIX'}
+
+
+def test_save_stb(stb):
+    o_file_name = 'output.stb'
+    stb.save_stb(o_file_name)
