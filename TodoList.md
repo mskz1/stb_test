@@ -18,17 +18,39 @@ pyStb
     * StbGirders
     * StbBeams
     * StbBraces
-    
+  * StbSections
+    * StbSecColumn_S
+      * StbSecSteelColumn
+    * StbSecBeam_RC
+      * StbSecFigure
+        * StbSecStraight
+      * StbSecBar_Arrangement
+        * StbSecBeam_Same_Section
+    * StbSecBeam_S
+      * StbSecSteelBeam
+    * StbSecBrace_S
+      * StbSecSteelBrace
+    * StbSecSteel
+      * StbSecRoll-BOX
+      * StbSecRoll-H
+      * StbSecRoll-C
+      * StbSecRoll-FB
+      
 * データの修正
   * StbNode
 
 xml.etree help[https://docs.python.jp/3/library/xml.etree.elementtree.html]
 -----
-☑ タグ、アトリビュートを指定して該当するエレメントを返す関数。複数のときはリスト？
-□ STBファイルの保存(tostringでは改行がLF？)
-□ matplotlibで形状表示？
-□ 
-□ 
+* ☑ タグ、アトリビュートを指定して該当するエレメントを返す関数。複数のときはリスト？
+* □ STBファイルの保存(tostringでは改行がLF？)
+* □ matplotlibで形状表示？
+* □ Axisの追加
+* □ Nodeの追加
+* □ 
+* □ 
+* □ 
+* □ 
+
 
 
 
