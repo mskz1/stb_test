@@ -107,3 +107,29 @@ class Stb:
                 # res.append(d) #あるいはエレメントを返す？
                 res.append(d.attrib)
         return res
+
+    def get_elements(self, tag, **kwargs):
+        # **kwargsで複数のパラメーター条件を指定し、該当するエレメントの（アトリビュート）のリストを返す
+        # 複数の条件の全てに該当するものが集められる。
+        res = []
+        for d in self.stb.iter(tag):
+            flg = []
+            for k, v in kwargs.items():
+                if d.attrib[k] == v:
+                    flg.append(True)
+                else:
+                    flg.append(False)
+            if False not in flg:
+                res.append(d) #エレメントを返す？
+                # res.append(d.attrib)
+        return res
+
+
+
+    def print_elements(self, tag):
+        print('*** ', tag, ' ***')
+        res = []
+        for d in self.stb.iter(tag):
+            res.append(d)
+        for i in res:
+            print(i.attrib)

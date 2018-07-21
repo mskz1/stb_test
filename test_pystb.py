@@ -67,14 +67,14 @@ def test_get_elements(stb):
     # for i in li:
     #     print(i)
     print()
-    print('col_shape------')
-    li = stb.get_element_attribute(STB_SEC_STEEL_COLUMN)
-    for i in li:
-        print(i)
-    print('beam_shape------')
-    li = stb.get_element_attribute(STB_SEC_STEEL_BEAM)
-    for i in li:
-        print(i)
+    # print('col_shape------')
+    # li = stb.get_element_attribute(STB_SEC_STEEL_COLUMN)
+    # for i in li:
+    #     print(i)
+    # print('beam_shape------')
+    # li = stb.get_element_attribute(STB_SEC_STEEL_BEAM)
+    # for i in li:
+    #     print(i)
 
     assert stb.get_element_attribute(STB_NODE, id='6')[0] == {'id': '6', 'x': '9000', 'y': '0', 'z': '150',
                                                               'kind': 'ON_GRID'}
@@ -88,3 +88,19 @@ def test_get_elements(stb):
 def test_save_stb(stb):
     o_file_name = 'output.stb'
     stb.save_stb(o_file_name)
+    pass
+
+def test_show_elements(stb):
+    # stb.print_elements(STB_X_AXIS)
+    # stb.print_elements(STB_STORY)
+    # stb.print_elements(STB_SEC_STEEL_COLUMN)
+    # stb.print_elements(STB_SEC_STEEL_BEAM)
+    stb.print_elements(STB_COLUMN)
+    pass
+
+def test_element_modify(stb):
+    stb.print_elements(STB_STORY)
+    elems = stb.get_elements(STB_STORY, name='RF')
+    e = elems[0]
+    e.attrib['height'] = '5000'
+    stb.print_elements(STB_STORY)

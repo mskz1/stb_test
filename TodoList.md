@@ -46,7 +46,7 @@ xml.etree help[https://docs.python.jp/3/library/xml.etree.elementtree.html]
 * □ matplotlibで形状表示？
 * □ Axisの追加
 * □ Nodeの追加
-* □ 
+* □ 指定したエレメントのアトリビュートの変更
 * □ 
 * □ 
 * □ 
