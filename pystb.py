@@ -5,6 +5,7 @@ STB_COLUMN, STB_GIRDER, STB_BEAM, STB_BRACE = 'StbColumn', 'StbGirder', 'StbBeam
 STB_SEC_COLUMN_S, STB_SEC_STEEL_COLUMN = 'StbSecColumn_S', 'StbSecSteelColumn'
 STB_SEC_BEAM_RC, STB_SEC_FIG = 'StbSecBeam_RC', 'StbSecFigure'
 STB_SEC_BEAM_S, STB_SEC_STEEL_BEAM = 'StbSecBeam_S', 'StbSecSteelBeam'
+STB_MEMBERS = 'StbMembers'
 
 
 class Stb:
@@ -31,6 +32,9 @@ class Stb:
             for d in self.stb.iter(tag):
                 ids.append(int(d.attrib['id']))
         return max(ids)
+
+    def get_next_free_node_id(self):
+        return self.get_max_id(STB_NODE) + 1
 
     def get_node_numbers(self):
         ids = []
@@ -120,11 +124,9 @@ class Stb:
                 else:
                     flg.append(False)
             if False not in flg:
-                res.append(d) #エレメントを返す？
+                res.append(d)  # エレメントを返す？
                 # res.append(d.attrib)
         return res
-
-
 
     def print_elements(self, tag):
         print('*** ', tag, ' ***')
@@ -133,3 +135,19 @@ class Stb:
             res.append(d)
         for i in res:
             print(i.attrib)
+
+    def get_max_member_id(self):
+        # XPath 機能
+        members = self.stb.findall('./StbModel/StbMembers//*[@id]')
+        ids = []
+        if members:
+            for d in members:
+                ids.append(int(d.attrib['id']))
+        return max(ids)
+
+    def add_node(self, x=0, y=0, z=0, kind="ON_BEAM"):
+        id = self.get_next_free_node_id()
+        nodes = self.stb.find('./StbModel/StbNodes')
+        node = ET.Element(STB_NODE, dict(id=str(id), x=str(x), y=str(y), z=str(z), kind=kind))
+        nodes.append(node)
+

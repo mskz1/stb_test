@@ -41,15 +41,15 @@ pyStb
 
 xml.etree help[https://docs.python.jp/3/library/xml.etree.elementtree.html]
 -----
-* ☑ タグ、アトリビュートを指定して該当するエレメントを返す関数。複数のときはリスト？
-* □ STBファイルの保存(tostringでは改行がLF？)
-* □ matplotlibで形状表示？
-* □ Axisの追加
-* □ Nodeの追加
-* □ 指定したエレメントのアトリビュートの変更
-* □ 
-* □ 
-* □ 
+* ✔ タグ、アトリビュートを指定して該当するエレメントを返す関数。複数のときはリスト？
+* ✔ STBファイルの保存(tostringでは改行がLF？)
+* ☐ matplotlibで形状表示？
+* ☐ Axisの追加
+* ✔ Nodeの追加
+* ✔ 指定したエレメントのアトリビュートの変更
+* ☐ 部材の追加
+* ☐ 
+* ☐ 
 
 
 

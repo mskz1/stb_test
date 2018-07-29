@@ -1,6 +1,7 @@
 from pystb import Stb, STB_NODE, STB_X_AXIS, STB_Y_AXIS, STB_STORY, STB_COLUMN, STB_GIRDER, STB_BEAM, STB_BRACE
 from pystb import STB_SEC_COLUMN_S, STB_SEC_STEEL_COLUMN
 from pystb import STB_SEC_BEAM_S, STB_SEC_STEEL_BEAM
+from pystb import STB_MEMBERS
 import pytest
 from pytest import approx
 
@@ -16,6 +17,8 @@ def stb():
 def test_node_max(stb):
     assert stb.get_max_id(STB_NODE) == 382
     assert stb.get_node_numbers() == 148
+    # StbMembers の max_id
+    assert stb.get_max_member_id() == 299
 
 
 def test_node_coordinates(stb):
@@ -66,7 +69,7 @@ def test_get_elements(stb):
     # li = stb.get_element_attribute(STB_COLUMN, name='C3')
     # for i in li:
     #     print(i)
-    print()
+    # print()
     # print('col_shape------')
     # li = stb.get_element_attribute(STB_SEC_STEEL_COLUMN)
     # for i in li:
@@ -86,21 +89,33 @@ def test_get_elements(stb):
 
 
 def test_save_stb(stb):
-    o_file_name = 'output.stb'
+    o_file_name = 'output_save_test.stb'
     stb.save_stb(o_file_name)
     pass
+
 
 def test_show_elements(stb):
     # stb.print_elements(STB_X_AXIS)
     # stb.print_elements(STB_STORY)
     # stb.print_elements(STB_SEC_STEEL_COLUMN)
     # stb.print_elements(STB_SEC_STEEL_BEAM)
-    stb.print_elements(STB_COLUMN)
+    # stb.print_elements(STB_COLUMN)
     pass
 
+
 def test_element_modify(stb):
-    stb.print_elements(STB_STORY)
+    # stb.print_elements(STB_STORY)
     elems = stb.get_elements(STB_STORY, name='RF')
     e = elems[0]
     e.attrib['height'] = '5000'
-    stb.print_elements(STB_STORY)
+    # stb.print_elements(STB_STORY)
+    elems = stb.get_element_attribute(STB_STORY, name='RF')
+    assert elems[0]['height'] == '5000'
+
+
+def test_add_node(stb):
+    assert stb.get_max_id(STB_NODE) == 382
+    assert stb.get_next_free_node_id() == 383
+    stb.add_node(x=100, y=100, z=300)
+    assert stb.get_max_id(STB_NODE) == 383
+    pass
