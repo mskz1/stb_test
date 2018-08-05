@@ -119,3 +119,13 @@ def test_add_node(stb):
     stb.add_node(x=100, y=100, z=300)
     assert stb.get_max_id(STB_NODE) == 383
     pass
+
+
+def test_add_beam(stb):
+    stb.print_elements(STB_BEAM)
+    n1_id = stb.add_node(x=0, y=0, z=1000)
+    n2_id = stb.add_node(x=2000, y=0, z=1000)
+    stb.add_beam(n1_id, n2_id, name='V1A',id_sec=18)
+    stb.print_elements(STB_BEAM)
+
+    pass

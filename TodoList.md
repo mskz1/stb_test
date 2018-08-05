@@ -5,7 +5,7 @@ pyStb
 計画
 * STB読み込み
   * 一貫計算ソフトから生成したSTB読み込み
-  * Excelからの簡易入力データからの生成
+  * Excel（xlsx）簡易入力データからの生成
   * 新規生成？
 * 各データ要素へのアクセス、内容表示
   * StbNode
@@ -48,7 +48,7 @@ xml.etree help[https://docs.python.jp/3/library/xml.etree.elementtree.html]
 * ✔ Nodeの追加
 * ✔ 指定したエレメントのアトリビュートの変更
 * ☐ 部材の追加
-* ☐ 
+  * ☐ add_beam
 * ☐ 
 
 

@@ -36,6 +36,9 @@ class Stb:
     def get_next_free_node_id(self):
         return self.get_max_id(STB_NODE) + 1
 
+    def get_next_free_member_id(self):
+        return self.get_max_member_id() + 1
+
     def get_node_numbers(self):
         ids = []
         if self.stb:
@@ -150,4 +153,14 @@ class Stb:
         nodes = self.stb.find('./StbModel/StbNodes')
         node = ET.Element(STB_NODE, dict(id=str(id), x=str(x), y=str(y), z=str(z), kind=kind))
         nodes.append(node)
+        return id
 
+    def add_beam(self, n1_id, n2_id, name='NA',id_sec=0):
+        id = self.get_next_free_member_id()
+        beams = self.stb.find('./StbModel/StbMembers/StbBeams')
+        beam = ET.Element(STB_BEAM,
+                          dict(id=str(id), name=name, idNode_start=str(n1_id), idNode_end=str(n2_id), rotate="0",
+                               id_section=str(id_sec), kind_structure="S", isFoundation="FALSE", offset="0", level="-50",
+                               offset_start_Z="-50", offset_end_Z="-50", condition_start="PIN", condition_end="PIN"))
+        beams.append(beam)
+        pass
