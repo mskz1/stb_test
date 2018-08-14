@@ -155,12 +155,24 @@ class Stb:
         nodes.append(node)
         return id
 
-    def add_beam(self, n1_id, n2_id, name='NA',id_sec=0):
+    def add_beam(self, n1_id, n2_id, name='NA', id_sec=0):
         id = self.get_next_free_member_id()
         beams = self.stb.find('./StbModel/StbMembers/StbBeams')
         beam = ET.Element(STB_BEAM,
                           dict(id=str(id), name=name, idNode_start=str(n1_id), idNode_end=str(n2_id), rotate="0",
-                               id_section=str(id_sec), kind_structure="S", isFoundation="FALSE", offset="0", level="-50",
+                               id_section=str(id_sec), kind_structure="S", isFoundation="FALSE", offset="0",
+                               level="-50",
                                offset_start_Z="-50", offset_end_Z="-50", condition_start="PIN", condition_end="PIN"))
         beams.append(beam)
         pass
+
+    def get_min_max_coord(self):
+        xc=[]
+        yc = []
+        zc = []
+        if self.stb:
+            for n in self.stb.iter('StbNode'):
+                xc.append(float(n.attrib['x']))
+                yc.append(float(n.attrib['y']))
+                zc.append(float(n.attrib['z']))
+        return (min(xc),max(xc)),(min(yc),max(yc)),(min(zc),max(zc))

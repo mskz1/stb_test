@@ -44,11 +44,19 @@ xml.etree help[https://docs.python.jp/3/library/xml.etree.elementtree.html]
 * ✔ タグ、アトリビュートを指定して該当するエレメントを返す関数。複数のときはリスト？
 * ✔ STBファイルの保存(tostringでは改行がLF？)
 * ☐ matplotlibで形状表示？
+  * ☐ 通り心表示
+  * ☐ 伏せ図表示（レベル指定）
+  * ☐ 軸組図表示（軸指定）
+  
+* ☐ 節点座標の最小・最大値を得る
 * ☐ Axisの追加
 * ✔ Nodeの追加
 * ✔ 指定したエレメントのアトリビュートの変更
+* ☐ 断面(Section)の抽出
+* ☐ 断面(Section)の修正
 * ☐ 部材の追加
   * ☐ add_beam
+  * ☐ add_post
 * ☐ 
 
 
