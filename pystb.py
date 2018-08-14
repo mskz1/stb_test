@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 import matplotlib.lines as ml
+import matplotlib.patches as mp
 
 STB_NODE, STB_X_AXIS, STB_Y_AXIS, STB_STORY = 'StbNode', 'StbX_Axis', 'StbY_Axis', 'StbStory'
 STB_COLUMN, STB_GIRDER, STB_BEAM, STB_BRACE = 'StbColumn', 'StbGirder', 'StbBeam', 'StbBrace'
@@ -68,6 +69,12 @@ class Stb:
                 if int(n.attrib['id']) == id:
                     return float(n.attrib['z'])
         return None
+
+    def get_node_coord(self, id):
+        if self.stb:
+            for n in self.stb.iter('StbNode'):
+                if int(n.attrib['id']) == id:
+                    return float(n.attrib['x']), float(n.attrib['y']), float(n.attrib['z'])
 
     def get_name_list(self, tag):
         res = []
@@ -179,7 +186,7 @@ class Stb:
                 zc.append(float(n.attrib['z']))
         return (min(xc), max(xc)), (min(yc), max(yc)), (min(zc), max(zc))
 
-    def plot_grids(self):
+    def plot_grids(self, show=False):
         line_style = dict(color='k', linestyle='dashdot', linewidth=0.6)
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
@@ -191,15 +198,54 @@ class Stb:
         for gn in x_grid_names:
             xc = self.get_element_attribute(STB_X_AXIS, name=gn)[0]['distance']
             ax.add_line(ml.Line2D((xc, xc), (ymin - ext, ymax + ext), **line_style))
-            ax.annotate(gn, xy=(xc, ymin-ext))
-            ax.annotate(gn, xy=(xc, ymax+ext))
+            ax.annotate(gn, xy=(xc, ymin - ext))
+            ax.annotate(gn, xy=(xc, ymax + ext))
 
         for gn in y_grid_names:
             yc = self.get_element_attribute(STB_Y_AXIS, name=gn)[0]['distance']
             ax.add_line(ml.Line2D((xmin - ext, xmax + ext), (yc, yc), **line_style))
-            ax.annotate(gn, xy=(xmin-ext, yc))
-            ax.annotate(gn, xy=(xmax+ext, yc))
+            ax.annotate(gn, xy=(xmin - ext, yc))
+            ax.annotate(gn, xy=(xmax + ext, yc))
 
         # ax.grid(True, linestyle=':', lw=0.5)
         plt.axis('equal')
-        plt.show()
+        if show:
+            plt.show()
+
+    def get_story_node_list(self, story=""):
+        nodes = []
+        if self.stb:
+            for d in self.stb.iter('StbStory'):
+                if d.attrib['name'] == story:
+                    for n in d.iter('StbNodeid'):
+                        nodes.append(int(n.attrib['id']))
+        return nodes
+
+    def get_axis_node_list(self, axis=''):
+        nodes = []
+        if self.stb:
+            for d in self.stb.iter('StbX_Axis'):
+                if d.attrib['name'] == axis:
+                    for n in d.iter('StbNodeid'):
+                        nodes.append(int(n.attrib['id']))
+            for d in self.stb.iter('StbY_Axis'):
+                if d.attrib['name'] == axis:
+                    for n in d.iter('StbNodeid'):
+                        nodes.append(int(n.attrib['id']))
+        return nodes
+
+    def plot_column(self, story='', show=False):
+        ct_style = dict(color='c', linestyle='solid', linewidth=1, fill=False)
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        nodes = self.get_story_node_list(story)
+        for n in nodes:
+            col = self.get_elements(STB_COLUMN, idNode_top=str(n))
+            if col:
+                x, y, z = self.get_node_coord(n)
+                ax.add_patch(mp.Circle((x, y), radius=100, **ct_style))
+        plt.axis('equal')
+        if show:
+            plt.show()
+        pass

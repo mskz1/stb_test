@@ -59,7 +59,9 @@ xml.etree help[https://docs.python.jp/3/library/xml.etree.elementtree.html]
 * ☐ 部材の追加
   * ☐ add_beam
   * ☐ add_post
-* ☐ 
+* ☐ ある条件（レベル、通り）に合致する要素の抽出
+
+
 
 
 

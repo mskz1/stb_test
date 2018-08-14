@@ -134,6 +134,24 @@ def test_min_max_coord_of_node(stb):
     # print(stb.get_min_max_coord())
     assert (stb.get_min_max_coord() == ((0.0, 21600.0), (0.0, 14400.0), (150.0, 4350.0)))
 
-def test_plot_grid_line(stb):
+
+def test_plot_grid_line(stb, show=False):
     stb.plot_grids()
+    pass
+
+
+def test_get_story_nodes(stb):
+    assert stb.get_story_node_list("1F") == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 26, 27, 39, 40, 52, 53, 58,
+                                             62, 65, 66, 78, 79, 91, 92, 104, 105, 106, 107, 109, 110, 111, 112, 113,
+                                             114, 115, 116, 117]
+
+
+def test_get_axis_nodes(stb):
+    assert stb.get_axis_node_list('A') == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 118, 119, 120, 121, 122, 123, 124,
+                                           125, 126, 127, 128, 129, 130, 235, 236, 237, 238, 239, 240, 241, 242, 243,
+                                           244, 245, 246, 247]
+
+
+def test_plot_column(stb):
+    stb.plot_column('RF', show=False)
     pass
