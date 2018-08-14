@@ -1,4 +1,6 @@
 import xml.etree.ElementTree as ET
+import matplotlib.pyplot as plt
+import matplotlib.lines as ml
 
 STB_NODE, STB_X_AXIS, STB_Y_AXIS, STB_STORY = 'StbNode', 'StbX_Axis', 'StbY_Axis', 'StbStory'
 STB_COLUMN, STB_GIRDER, STB_BEAM, STB_BRACE = 'StbColumn', 'StbGirder', 'StbBeam', 'StbBrace'
@@ -167,7 +169,7 @@ class Stb:
         pass
 
     def get_min_max_coord(self):
-        xc=[]
+        xc = []
         yc = []
         zc = []
         if self.stb:
@@ -175,4 +177,29 @@ class Stb:
                 xc.append(float(n.attrib['x']))
                 yc.append(float(n.attrib['y']))
                 zc.append(float(n.attrib['z']))
-        return (min(xc),max(xc)),(min(yc),max(yc)),(min(zc),max(zc))
+        return (min(xc), max(xc)), (min(yc), max(yc)), (min(zc), max(zc))
+
+    def plot_grids(self):
+        line_style = dict(color='k', linestyle='dashdot', linewidth=0.6)
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        ext = 2000
+        (xmin, xmax), (ymin, ymax) = self.get_min_max_coord()[:2]
+        x_grid_names = self.get_name_list(STB_X_AXIS)
+        y_grid_names = self.get_name_list(STB_Y_AXIS)
+
+        for gn in x_grid_names:
+            xc = self.get_element_attribute(STB_X_AXIS, name=gn)[0]['distance']
+            ax.add_line(ml.Line2D((xc, xc), (ymin - ext, ymax + ext), **line_style))
+            ax.annotate(gn, xy=(xc, ymin-ext))
+            ax.annotate(gn, xy=(xc, ymax+ext))
+
+        for gn in y_grid_names:
+            yc = self.get_element_attribute(STB_Y_AXIS, name=gn)[0]['distance']
+            ax.add_line(ml.Line2D((xmin - ext, xmax + ext), (yc, yc), **line_style))
+            ax.annotate(gn, xy=(xmin-ext, yc))
+            ax.annotate(gn, xy=(xmax+ext, yc))
+
+        # ax.grid(True, linestyle=':', lw=0.5)
+        plt.axis('equal')
+        plt.show()

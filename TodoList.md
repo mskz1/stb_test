@@ -9,7 +9,7 @@ pyStb
   * 新規生成？
 * 各データ要素へのアクセス、内容表示
   * StbNode
-    * 
+    * .
   * StbX_Axis
   * StbY_Axis
   * StbStory
@@ -44,11 +44,13 @@ xml.etree help[https://docs.python.jp/3/library/xml.etree.elementtree.html]
 * ✔ タグ、アトリビュートを指定して該当するエレメントを返す関数。複数のときはリスト？
 * ✔ STBファイルの保存(tostringでは改行がLF？)
 * ☐ matplotlibで形状表示？
-  * ☐ 通り心表示
+  * ✔ 通り心 線表示
+  * ☐ 通り心 名表示
   * ☐ 伏せ図表示（レベル指定）
+  * ☐ 伏せ図 柱表示
   * ☐ 軸組図表示（軸指定）
   
-* ☐ 節点座標の最小・最大値を得る
+* ✔ 節点座標の最小・最大値を得る
 * ☐ Axisの追加
 * ✔ Nodeの追加
 * ✔ 指定したエレメントのアトリビュートの変更
