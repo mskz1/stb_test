@@ -186,10 +186,9 @@ class Stb:
                 zc.append(float(n.attrib['z']))
         return (min(xc), max(xc)), (min(yc), max(yc)), (min(zc), max(zc))
 
-    def plot_grids(self, show=False):
+    def plot_grids(self, ax):
         line_style = dict(color='k', linestyle='dashdot', linewidth=0.6)
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
+        text_style = dict(color='k', size='small')
         ext = 2000
         (xmin, xmax), (ymin, ymax) = self.get_min_max_coord()[:2]
         x_grid_names = self.get_name_list(STB_X_AXIS)
@@ -198,19 +197,14 @@ class Stb:
         for gn in x_grid_names:
             xc = self.get_element_attribute(STB_X_AXIS, name=gn)[0]['distance']
             ax.add_line(ml.Line2D((xc, xc), (ymin - ext, ymax + ext), **line_style))
-            ax.annotate(gn, xy=(xc, ymin - ext))
-            ax.annotate(gn, xy=(xc, ymax + ext))
+            ax.annotate(gn, xy=(xc, ymin - ext), **text_style)
+            ax.annotate(gn, xy=(xc, ymax + ext), **text_style)
 
         for gn in y_grid_names:
             yc = self.get_element_attribute(STB_Y_AXIS, name=gn)[0]['distance']
             ax.add_line(ml.Line2D((xmin - ext, xmax + ext), (yc, yc), **line_style))
-            ax.annotate(gn, xy=(xmin - ext, yc))
-            ax.annotate(gn, xy=(xmax + ext, yc))
-
-        # ax.grid(True, linestyle=':', lw=0.5)
-        plt.axis('equal')
-        if show:
-            plt.show()
+            ax.annotate(gn, xy=(xmin - ext, yc), **text_style)
+            ax.annotate(gn, xy=(xmax + ext, yc), **text_style)
 
     def get_story_node_list(self, story=""):
         nodes = []
@@ -234,18 +228,55 @@ class Stb:
                         nodes.append(int(n.attrib['id']))
         return nodes
 
-    def plot_column(self, story='', show=False):
-        ct_style = dict(color='c', linestyle='solid', linewidth=1, fill=False)
+    def plot_column(self, ax, story):
+        ct_style = dict(color='c', linestyle='solid', linewidth=1, fill=True)
+        text_style = dict(textcoords='offset points', color='k', size='x-small')
 
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
         nodes = self.get_story_node_list(story)
         for n in nodes:
             col = self.get_elements(STB_COLUMN, idNode_top=str(n))
             if col:
                 x, y, z = self.get_node_coord(n)
                 ax.add_patch(mp.Circle((x, y), radius=100, **ct_style))
+                # 節点番号
+                ax.annotate(str(n), (x, y), xytext=(3, 3), **text_style)
+                # 柱符号
+                ax.annotate(col[0].attrib['name'], (x, y), xytext=(3, -9), **text_style)
+
+    def plot_girder(self, ax, story):
+        line_style = dict(color='g', linestyle='solid', linewidth=2., marker='.')
+        nodes = self.get_story_node_list(story)
+        for n in nodes:
+            gir = self.get_elements(STB_GIRDER, idNode_start=str(n))
+            if gir:
+                for g in gir:  # 始点番号が同じで異なる梁がある
+                    x1, y1, z1 = self.get_node_coord(n)
+                    x2, y2, z2 = self.get_node_coord(int(g.attrib['idNode_end']))
+                    ax.add_line(ml.Line2D((x1, x2), (y1, y2), **line_style))
+
+    def plot_beam(self, ax, story):
+        line_style = dict(color='b', linestyle='solid', linewidth=1., marker='.')
+        nodes = self.get_story_node_list(story)
+        for n in nodes:
+            gir = self.get_elements(STB_BEAM, idNode_start=str(n))
+            if gir:
+                for g in gir:  # 始点番号が同じで異なる梁がある
+                    x1, y1, z1 = self.get_node_coord(n)
+                    x2, y2, z2 = self.get_node_coord(int(g.attrib['idNode_end']))
+                    ax.add_line(ml.Line2D((x1, x2), (y1, y2), **line_style))
+
+    def plot(self, grid=True, col=False, gir=False, beam=False, story=''):
+        """伏せ図プロット"""
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        if grid:
+            self.plot_grids(ax)
+        if col:
+            self.plot_column(ax, story)
+        if gir:
+            self.plot_girder(ax, story)
+        if beam:
+            self.plot_beam(ax, story)
+
         plt.axis('equal')
-        if show:
-            plt.show()
-        pass
+        plt.show()
