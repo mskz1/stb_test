@@ -50,6 +50,9 @@ xml.etree help[https://docs.python.jp/3/library/xml.etree.elementtree.html]
   * ✔ 通り心 名表示
   * ✔ 伏せ図表示（レベル指定）
   * ✔ 伏せ図 柱表示
+  * ✔ 伏せ図 梁表示
+  * ☐ 伏せ図 梁 符号タテ向き設定
+  * ✔ 伏せ図　梁　端部を縮める
   * ☐ 軸組図表示（軸指定）
   
 * ✔ 節点座標の最小・最大値を得る

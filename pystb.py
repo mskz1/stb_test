@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 import matplotlib.lines as ml
 import matplotlib.patches as mp
+import math
 
 STB_NODE, STB_X_AXIS, STB_Y_AXIS, STB_STORY = 'StbNode', 'StbX_Axis', 'StbY_Axis', 'StbStory'
 STB_COLUMN, STB_GIRDER, STB_BEAM, STB_BRACE = 'StbColumn', 'StbGirder', 'StbBeam', 'StbBrace'
@@ -9,6 +10,31 @@ STB_SEC_COLUMN_S, STB_SEC_STEEL_COLUMN = 'StbSecColumn_S', 'StbSecSteelColumn'
 STB_SEC_BEAM_RC, STB_SEC_FIG = 'StbSecBeam_RC', 'StbSecFigure'
 STB_SEC_BEAM_S, STB_SEC_STEEL_BEAM = 'StbSecBeam_S', 'StbSecSteelBeam'
 STB_MEMBERS = 'StbMembers'
+
+
+def mid_point(p1, p2):
+    return (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2
+
+
+def get_theta(p1, p2):
+    """p1->p2の直線の、X軸からの傾き角度thetaを返す"""
+    x1, y1 = p1[0], p1[1]
+    x2, y2 = p2[0], p2[1]
+    dx = x2 - x1
+    dy = y2 - y1
+    return math.atan2(dy, dx)
+
+
+def get_shortened_points(p1, p2, d=100):
+    theta = get_theta(p1, p2)
+    x1, y1 = p1[0], p1[1]
+    x2, y2 = p2[0], p2[1]
+    x11 = x1 + d * math.cos(theta)
+    y11 = y1 + d * math.sin(theta)
+    x21 = x2 - d * math.cos(theta)
+    y21 = y2 - d * math.sin(theta)
+    # print((x11, y11), (x21, y21))
+    return (x11, y11), (x21, y21)
 
 
 class Stb:
@@ -228,23 +254,27 @@ class Stb:
                         nodes.append(int(n.attrib['id']))
         return nodes
 
-    def plot_column(self, ax, story):
-        ct_style = dict(color='c', linestyle='solid', linewidth=1, fill=True)
-        text_style = dict(textcoords='offset points', color='k', size='x-small')
+    def plot_column(self, ax, story, show_node_num=False, show_fugou=True):
+        ct_style = dict(color='m', linestyle='solid', linewidth=2., fill=False)
+        text_style = dict(textcoords='offset points', color='m', size='x-small')
 
         nodes = self.get_story_node_list(story)
         for n in nodes:
             col = self.get_elements(STB_COLUMN, idNode_top=str(n))
             if col:
                 x, y, z = self.get_node_coord(n)
-                ax.add_patch(mp.Circle((x, y), radius=100, **ct_style))
+                ax.add_patch(mp.Circle((x, y), radius=75, **ct_style))
                 # 節点番号
-                ax.annotate(str(n), (x, y), xytext=(3, 3), **text_style)
+                if show_node_num:
+                    ax.annotate(str(n), (x, y), xytext=(3, 3), **text_style)
                 # 柱符号
-                ax.annotate(col[0].attrib['name'], (x, y), xytext=(3, -9), **text_style)
+                if show_fugou:
+                    ax.annotate(col[0].attrib['name'], (x, y), xytext=(3, -9), **text_style)
 
-    def plot_girder(self, ax, story):
+    def plot_girder(self, ax, story, show_fugou=True):
         line_style = dict(color='g', linestyle='solid', linewidth=2., marker='.')
+        text_style = dict(textcoords='offset points', color='g', size='x-small')
+
         nodes = self.get_story_node_list(story)
         for n in nodes:
             gir = self.get_elements(STB_GIRDER, idNode_start=str(n))
@@ -252,10 +282,16 @@ class Stb:
                 for g in gir:  # 始点番号が同じで異なる梁がある
                     x1, y1, z1 = self.get_node_coord(n)
                     x2, y2, z2 = self.get_node_coord(int(g.attrib['idNode_end']))
-                    ax.add_line(ml.Line2D((x1, x2), (y1, y2), **line_style))
+                    p11, p21 = get_shortened_points((x1, y1), (x2, y2), 150)
+                    # ax.add_line(ml.Line2D((x1, x2), (y1, y2), **line_style))
+                    ax.add_line(ml.Line2D((p11[0], p21[0]), (p11[1], p21[1]), **line_style))
+                    if show_fugou:
+                        ax.annotate(g.attrib['name'], (mid_point((x1, y1), (x2, y2))), xytext=(1, 3), **text_style)
 
-    def plot_beam(self, ax, story):
-        line_style = dict(color='b', linestyle='solid', linewidth=1., marker='.')
+    def plot_beam(self, ax, story, show_fugou=True):
+        line_style = dict(color='b', linestyle='solid', linewidth=2., marker='.')
+        text_style = dict(textcoords='offset points', color='b', size='x-small')
+
         nodes = self.get_story_node_list(story)
         for n in nodes:
             gir = self.get_elements(STB_BEAM, idNode_start=str(n))
@@ -263,7 +299,11 @@ class Stb:
                 for g in gir:  # 始点番号が同じで異なる梁がある
                     x1, y1, z1 = self.get_node_coord(n)
                     x2, y2, z2 = self.get_node_coord(int(g.attrib['idNode_end']))
-                    ax.add_line(ml.Line2D((x1, x2), (y1, y2), **line_style))
+                    p11, p21 = get_shortened_points((x1, y1), (x2, y2), 150)
+                    # ax.add_line(ml.Line2D((x1, x2), (y1, y2), **line_style))
+                    ax.add_line(ml.Line2D((p11[0], p21[0]), (p11[1], p21[1]), **line_style))
+                    if show_fugou:
+                        ax.annotate(g.attrib['name'], (mid_point((x1, y1), (x2, y2))), xytext=(1, 3), **text_style)
 
     def plot(self, grid=True, col=False, gir=False, beam=False, story=''):
         """伏せ図プロット"""

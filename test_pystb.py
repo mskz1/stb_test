@@ -4,6 +4,8 @@ from pystb import STB_SEC_BEAM_S, STB_SEC_STEEL_BEAM
 from pystb import STB_MEMBERS
 import pytest
 from pytest import approx
+from pystb import mid_point, get_theta, get_shortened_points
+import math
 
 
 @pytest.fixture
@@ -156,6 +158,28 @@ def test_plot_column(stb):
     stb.plot(col=True, gir=True, beam=True, story='RF')
     stb.plot(grid=False, col=True, gir=True, beam=True, story='RF')
 
-    stb.plot(col=True, gir=True, story='MF')
-    stb.plot(col=True, gir=True, story='1F')
+    # stb.plot(col=True, gir=True, story='MF')
+    # stb.plot(col=True, gir=True, story='1F')
     pass
+
+
+def test_mid_point():
+    assert mid_point((0, 0), (6, 4)) == (3, 2)
+
+
+def test_theta():
+    assert get_theta((0, 0), (1, 1)) == approx(math.pi / 4)
+    assert get_theta((0, 0), (1, 1)) == approx(math.radians(45))
+    assert get_theta((0, 0), (1, math.sqrt(3))) == approx(math.radians(60))
+    assert get_theta((0, 0), (1, -1)) == approx(-math.pi / 4)
+    assert get_theta((0, 0), (-1, 1)) == approx(3 * math.pi / 4)
+    assert get_theta((0, 0), (-1, -1)) == approx(-3 * math.pi / 4)
+
+
+def test_modify_line_end_point():
+    assert get_shortened_points((0, 0), (4000, 0), 100) == ((100, 0), (3900, 0))
+    assert get_shortened_points((0, 0), (-4000, 0), 100) == ((approx(-100), approx(0)), (approx(-3900), approx(0)))
+    assert get_shortened_points((0, 0), (0, 3000), 200) == ((approx(0), approx(200)), (approx(0), approx(2800)))
+    assert get_shortened_points((0, -3000), (0, 3000), 200) == ((approx(0), approx(-2800)), (approx(0), approx(2800)))
+    assert get_shortened_points((0, 0), (2000, 2000), 100) == (
+                                (approx(70.7107), approx(70.7107)), (approx(1929.289), approx(1929.289)))
