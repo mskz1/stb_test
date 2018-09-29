@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as ml
 import matplotlib.patches as mp
 import math
+import xml.dom.minidom as minidom
 
 STB_NODE, STB_X_AXIS, STB_Y_AXIS, STB_STORY = 'StbNode', 'StbX_Axis', 'StbY_Axis', 'StbStory'
 STB_COLUMN, STB_GIRDER, STB_BEAM, STB_BRACE = 'StbColumn', 'StbGirder', 'StbBeam', 'StbBrace'
@@ -41,9 +42,41 @@ class Stb:
     def __init__(self):
         self.stb = None
 
+    def new_stb(self):
+        st = ET.Element('ST_BRIDGE')
+        st.set('version', '1.4.00')
+
+        mdl = ET.SubElement(st, 'StbModel')
+        nodes = ET.SubElement(mdl, 'StbNodes')
+
+        axes = ET.SubElement(mdl, 'StbAxes')
+        stories = ET.SubElement(mdl, 'StbStories')
+        members = ET.SubElement(mdl, 'StbMembers')
+        columns = ET.SubElement(members, 'StbColumns')
+        posts = ET.SubElement(members, 'StbPosts')
+        girders = ET.SubElement(members, 'StbGirders')
+        beams = ET.SubElement(members, 'StbBeams')
+        braces = ET.SubElement(members, 'StbBraces')
+        slabs = ET.SubElement(members, 'StbSlabs')
+        walls = ET.SubElement(members, 'StbWalls')
+        parapets = ET.SubElement(members, 'StbParapets')
+        foudation_columns = ET.SubElement(members, 'StbFoundationColumns')
+        footings = ET.SubElement(members, 'StbFootings')
+        strip_footings = ET.SubElement(members, 'StbStrip_Footings')
+        piles = ET.SubElement(members, 'StbPiles')
+        sections = ET.SubElement(mdl, 'StbSections')
+        joints = ET.SubElement(mdl, 'StbJoints')
+        self.stb = ET.ElementTree(element=st).getroot()
+
     def load_stb(self, file):
         with open(file, 'r', encoding='Shift_JIS') as f:
             self.stb = ET.fromstring(f.read())
+
+    def save_stb2(self, file):
+        txt = ET.tostring(self.stb, encoding='unicode')
+        with open(file, 'w', encoding='Shift_JIS') as f:
+            f.write('<?xml version="1.0" encoding="Shift_JIS"?>' + chr(10))
+            f.write((minidom.parseString(txt)).toprettyxml(indent='  '))
 
     def save_stb(self, file):
         # tree = ET.ElementTree(self.stb)

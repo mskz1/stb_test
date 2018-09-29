@@ -155,8 +155,8 @@ def test_get_axis_nodes(stb):
 
 
 def test_plot_column(stb):
-    stb.plot(col=True, gir=True, beam=True, story='RF')
-    stb.plot(grid=False, col=True, gir=True, beam=True, story='RF')
+    # stb.plot(col=True, gir=True, beam=True, story='RF')
+    # stb.plot(grid=False, col=True, gir=True, beam=True, story='RF')
 
     # stb.plot(col=True, gir=True, story='MF')
     # stb.plot(col=True, gir=True, story='1F')
@@ -182,4 +182,24 @@ def test_modify_line_end_point():
     assert get_shortened_points((0, 0), (0, 3000), 200) == ((approx(0), approx(200)), (approx(0), approx(2800)))
     assert get_shortened_points((0, -3000), (0, 3000), 200) == ((approx(0), approx(-2800)), (approx(0), approx(2800)))
     assert get_shortened_points((0, 0), (2000, 2000), 100) == (
-                                (approx(70.7107), approx(70.7107)), (approx(1929.289), approx(1929.289)))
+        (approx(70.7107), approx(70.7107)), (approx(1929.289), approx(1929.289)))
+
+
+def test_new_stb():
+    # import xml.etree.ElementTree as ET
+    # st = ET.Element('ST_BRIDGE')
+    # st.set('version', '1.4.00')
+    #
+    # mdl = ET.SubElement(st, 'StbModel')
+    # axes = ET.SubElement(mdl, 'StbAxes')
+    # x1 = ET.SubElement(axes, 'StbX_Axis')
+    # x1.set('id', '1')
+    # x1.set('name', '1')
+    # x1.set('distance', '0')
+    # tree = ET.ElementTree(element=st)
+
+    ss = Stb()
+    # ss.stb = ET.ElementTree(element=st).getroot()
+    ss.new_stb()
+    ss.save_stb2("output_new.stb")
+    pass
