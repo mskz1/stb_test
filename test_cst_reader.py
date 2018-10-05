@@ -42,13 +42,6 @@ def test_load_data():
     assert cst.get_buzai_data('ETC-NOKIGETA', idx=6) == ["C-125x50x20x2.3", "C-125x50x20x3.2"]
 
 
-    # print(cst.buzai)
-    # for d in cst.get_buzai_data('HASHIRA'):
-    #     print(d.strip())
-    # print(cst.get_buzai_data('HASHIRA', idx=1))
-    # print(cst.get_buzai_data('HASHIRA', idx=6))
-
-
 def test_file_names():
     # cst = CasstData()
     # files = cst._buzaikigou_file_names("sample_cst")
@@ -56,5 +49,4 @@ def test_file_names():
     # #     print(os.path.basename(x))
     # for x in files:
     #     print(os.path.basename(x)[:-4].split(sep='_')[-1]) # 拡張子.csvを除き、_で区切られる最後の単語
-
     pass

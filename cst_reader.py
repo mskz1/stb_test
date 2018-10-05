@@ -35,8 +35,10 @@ class CasstData:
                 self.buzai[kigou] = lines
 
     def _buzaikigou_file_names(self, folder_name):
-        file_names = glob.glob(os.path.join(folder_name, BUZAI_KIGOU_FOLDER_PATH, 'list_buzaikigou_*.csv'))
-        return file_names
+        # 不要？
+        # file_names = glob.glob(os.path.join(folder_name, BUZAI_KIGOU_FOLDER_PATH, 'list_buzaikigou_*.csv'))
+        # return file_names
+        pass
 
     def load(self, folder_name):
         with open(os.path.join(folder_name, BUKKEN_CSV_NAME)) as f:
@@ -70,32 +72,6 @@ class CasstData:
                 return res
         else:
             return self.buzai[kigou]
-
-
-def read_cst(folder_name):
-    # 不要
-    res = {}
-    with open(os.path.join(folder_name, BUKKEN_CSV_NAME)) as f:
-        load_section_data(f, res)
-    with open(os.path.join(folder_name, BUZAI_CSV_NAME)) as f:
-        load_section_data(f, res)
-    return res
-
-
-def load_section_data(f, res):
-    # 不要
-    lines = f.readlines()
-    section_index = []
-    for i, line in enumerate(lines):
-        if line[:7] == "SECTION":
-            section_index.append(i)
-    for i, idx in enumerate(section_index):
-        section_name = lines[idx].split(sep=',')[1]
-        if i < len(section_index) - 1:
-            data = lines[idx + 1:section_index[i + 1]]
-        else:
-            data = lines[idx + 1:]
-        res[section_name] = data
 
 
 if __name__ == '__main__':

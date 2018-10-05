@@ -73,6 +73,7 @@ class Stb:
             self.stb = ET.fromstring(f.read())
 
     def save_stb2(self, file):
+        # new_stbとした場合の仮対応用
         txt = ET.tostring(self.stb, encoding='unicode')
         with open(file, 'w', encoding='Shift_JIS') as f:
             f.write('<?xml version="1.0" encoding="Shift_JIS"?>' + chr(10))
@@ -353,3 +354,11 @@ class Stb:
 
         plt.axis('equal')
         plt.show()
+
+    def add_grid(self, param, id, name, distance):
+        axes = self.stb.find('./StbModel/StbAxes')
+        ax = ET.Element(param, dict(id=str(id), name=str(name), distance=str(distance)))
+        axes.append(ax)
+        node_list = ET.Element('StbNodeid_List') # これがないと、Revit読み込みエラーとなる。
+        ax.append(node_list)
+        pass

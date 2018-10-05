@@ -203,3 +203,16 @@ def test_new_stb():
     ss.new_stb()
     ss.save_stb2("output_new.stb")
     pass
+
+
+def test_new_stb_grid():
+    ss = Stb()
+    ss.new_stb()
+    ss.add_grid(STB_X_AXIS, id=1, name=1, distance=0)
+    ss.add_grid(STB_X_AXIS, id=2, name=2, distance=5000.)
+    ss.add_grid(STB_X_AXIS, id=3, name=3, distance=10000.)
+    ss.add_grid(STB_Y_AXIS, id=101, name='A', distance=0)
+    ss.add_grid(STB_Y_AXIS, id=102, name='B', distance=8000.)
+
+    ss.save_stb2('output_new_grid.stb')
+    pass
