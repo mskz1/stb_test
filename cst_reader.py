@@ -8,6 +8,55 @@ BUZAI_CSV_NAME = 'Structure\Analysis\Cooperation_Buzai.csv'
 BUZAI_KIGOU_FOLDER_PATH = "Master"
 
 
+def sec_cst_to_stb(data, shubetu):
+    """
+    casstの断面データからstbへ変換
+    :return:
+    """
+    res = []
+    if shubetu == 'HASHIRA':  # 角パイプ想定
+        # sid = 1
+        for line in data:
+            d = line.split(',')
+            fugou, name, direc = d[0].strip(), d[5].strip(), d[8].strip()
+            # print(fugou, name, direc)
+            A = name.split('-')[1].split('x')[0]
+            B = name.split('-')[1].split('x')[1]
+            t = name.split('-')[1].split('x')[2]
+            r = str(float(t) * 2)
+            # res[sid] = [fugou, A, B, t, r, direc]
+            res.append(dict(fugou=fugou, name=name, A=A, B=B, t=t, r=r, direc=direc))
+            # sid += 1
+        # print(res)
+    if shubetu == 'OOBARI' or shubetu == 'KOBARI':
+        for line in data:
+            d = line.split(',')
+            fugou, name = d[0].strip(), d[5].strip()
+            print(fugou, name)
+            A = name.split('-')[1].split('x')[0]
+            B = name.split('-')[1].split('x')[1]
+            t1 = name.split('-')[1].split('x')[2]
+            t2 = name.split('-')[1].split('x')[3]
+            if int(A) <= 250:
+                r = '8'
+            if 298 <= int(A):
+                r = '13'
+            if int(A) == 244:
+                r = '13'
+            res.append(dict(fugou=fugou, name=name, A=A, B=B, t1=t1, t2=t2, r=r))
+        print(res)
+
+
+
+
+
+
+
+
+
+    pass
+
+
 class CasstData:
     def __init__(self):
         self.stb = Stb()
@@ -49,6 +98,11 @@ class CasstData:
         pass
 
     def load(self, folder_name):
+        """
+        casstフォルダを指定し、データを読み込む
+        :param folder_name:
+        :return:
+        """
         with open(os.path.join(folder_name, BUKKEN_CSV_NAME)) as f:
             self._load_section_data(f, self.sec_data)
         with open(os.path.join(folder_name, BUZAI_CSV_NAME)) as f:
@@ -56,6 +110,13 @@ class CasstData:
         self._load_buzai_data(folder_name)
 
     def get_section_data(self, section, idx=None):
+        """
+        セクション名を指定し、データを得る。
+        idxを指定しない場合は全体をリストで返す。
+        :param section:
+        :param idx:
+        :return:
+        """
         if idx:
             data = self.sec_data[section]
             if len(data) == 1:
@@ -138,7 +199,7 @@ class CasstData:
         for i, name in enumerate(xnames):
             self.stb.add_grid('StbX_Axis', id=i + 101, name=name, distance=xdists[i])
         for i, name in enumerate(ynames):
-            self.stb.add_grid('StbY_Axis', id=i+1, name=name, distance=ydists[i])
+            self.stb.add_grid('StbY_Axis', id=i + 1, name=name, distance=ydists[i])
 
     def _set_story_height(self):
         names = ['1FL', '2FL', '3FL']
@@ -159,7 +220,10 @@ class CasstData:
         # STBモデルを生成
         self._set_story_height()
 
-        # 柱
+        # 柱断面
+        sec_data = self.get_section_data('HASHIRA')
+
+        # 柱部材
         data = self.get_section_data('HASHIRA')
         cid = 1
         for line in data:
@@ -174,7 +238,6 @@ class CasstData:
             n2 = self.add_node(xc, yc, zc_u)
             self.stb.add_column(cid, fugou, n1, n2, '1')
             cid += 1
-
 
 
 if __name__ == '__main__':

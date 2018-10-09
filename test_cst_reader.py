@@ -3,7 +3,7 @@ import os
 from pytest import approx
 # from cst_reader import read_cst
 from cst_reader import CasstData
-
+from cst_reader import sec_cst_to_stb
 
 def print_data(da, section):
     for l in da[section]:
@@ -71,7 +71,7 @@ def test_convert_grid():
     cst.stb.save_stb2('output_convert_grid.stb')
 
 
-# @pytest.mark.skip('ファイル出力ルーチンのため')
+@pytest.mark.skip('ファイル出力ルーチンのため')
 def test_gen_stb_model():
     cst = CasstData()
     cst.load('sample_cst')
@@ -81,3 +81,14 @@ def test_gen_stb_model():
     cst.gen_stb_model()
     cst.stb.add_section_test()
     cst.stb.save_stb2('output_stb_col.stb')
+
+def test_section_name_convert():
+    cst = CasstData()
+    cst.load('sample_cst')
+
+    sec_cst_to_stb(cst.get_buzai_data('HASHIRA'),'HASHIRA')
+    sec_cst_to_stb(cst.get_buzai_data('OOBARI'),'OOBARI')
+    sec_cst_to_stb(cst.get_buzai_data('KOBARI'),'KOBARI')
+    # assert sec_cst_to_stb('□P-125x125x4.5')['A'] == "125"
+    # assert sec_cst_to_stb('□P-125x125x4.5')['B'] == "125"
+    # assert sec_cst_to_stb('□P-125x125x4.5')['t'] == "4.5"
