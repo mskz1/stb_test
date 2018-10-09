@@ -43,6 +43,10 @@ class Stb:
         self.stb = None
 
     def new_stb(self):
+        """
+        STBデータ新規作成
+        :return:
+        """
         st = ET.Element('ST_BRIDGE')
         st.set('version', '1.4.00')
 
@@ -76,8 +80,9 @@ class Stb:
         # new_stbとした場合の仮対応用
         txt = ET.tostring(self.stb, encoding='unicode')
         with open(file, 'w', encoding='Shift_JIS') as f:
-            f.write('<?xml version="1.0" encoding="Shift_JIS"?>' + chr(10))
+            # f.write('<?xml version="1.0" encoding="Shift_JIS"?>' + chr(10))
             f.write((minidom.parseString(txt)).toprettyxml(indent='  '))
+            # f.write((minidom.parseString(txt)).toprettyxml(indent='  ',encoding='shift_jis'))
 
     def save_stb(self, file):
         # tree = ET.ElementTree(self.stb)
@@ -217,12 +222,20 @@ class Stb:
                 ids.append(int(d.attrib['id']))
         return max(ids)
 
-    def add_node(self, x=0, y=0, z=0, kind="ON_BEAM"):
-        id = self.get_next_free_node_id()
+    def add_node(self, id=None, x=0, y=0, z=0, kind="OTHER"):
+        if id is None:
+            id = self.get_next_free_node_id()
         nodes = self.stb.find('./StbModel/StbNodes')
         node = ET.Element(STB_NODE, dict(id=str(id), x=str(x), y=str(y), z=str(z), kind=kind))
         nodes.append(node)
         return id
+
+    def add_node_tmp1(self):
+        # 通心生成のため、仮のNodeを作る
+        # nodes = self.stb.find('./StbModel/StbNodes')
+        # node = ET.Element(STB_NODE, dict(id=str(20000), x=str(0), y=str(0), z=str(0), kind='OTHER'))
+        # nodes.append(node)
+        pass
 
     def add_beam(self, n1_id, n2_id, name='NA', id_sec=0):
         id = self.get_next_free_member_id()
@@ -356,9 +369,76 @@ class Stb:
         plt.show()
 
     def add_grid(self, param, id, name, distance):
+        # Gridを一つ生成する
         axes = self.stb.find('./StbModel/StbAxes')
         ax = ET.Element(param, dict(id=str(id), name=str(name), distance=str(distance)))
-        axes.append(ax)
-        node_list = ET.Element('StbNodeid_List') # これがないと、Revit読み込みエラーとなる。
+        node_list = ET.Element('StbNodeid_List')  # これがないと、Revit2017読み込みエラーとなる。
+        node_id = ET.Element('StbNodeid', id='1')  # 試しに、すべてid=1としてみる。とりあえず、読み込める。
+
+        node_list.append(node_id)
         ax.append(node_list)
-        pass
+        axes.append(ax)
+
+    def add_story(self, id, name, height):
+        """
+        層を生成する
+        :param id:
+        :param name:
+        :param height:
+        :return:
+        """
+        # 層を生成する
+        stories = self.stb.find('./StbModel/StbStories')
+        node_list = ET.Element('StbNodeid_List')  # これがないと、Revit2017読み込みエラーとなる。
+        st = ET.Element('StbStory', dict(id=str(id), name=str(name), height=str(height), kind='GENERAL'))
+        st.append(node_list)
+        stories.append(st)
+
+    def add_story_test(self, id=0, name="", height=0):
+        # テスト用　
+        stories = self.stb.find('./StbModel/StbStories')
+        node_list = ET.Element('StbNodeid_List')  # これがないと、Revit2017読み込みエラーとなる。
+
+        st1 = ET.Element('StbStory', dict(id='1', name='1F', height='100', kind='GENERAL'))
+        st1.append(node_list)
+        st2 = ET.Element('StbStory', dict(id='2', name='RF', height='3000', kind='GENERAL'))
+        st2.append(node_list)
+        stories.append(st1)
+        stories.append(st2)
+
+    def add_column(self, id, fugou, b_node_id, t_node_id, sec_id, kind='S'):
+        columns = self.stb.find('./StbModel/StbMembers/StbColumns')
+        col = ET.Element(STB_COLUMN,dict(id=str(id), name=str(fugou), idNode_bottom=str(b_node_id),
+                                     idNode_top=str(t_node_id),id_section=str(sec_id), kind_structure=str(kind)))
+        columns.append(col)
+
+    def add_col_test(self):
+        # add section
+        self.add_section_test()
+
+        # add_node
+        # nid1 = self.add_node(0, 0, 0, kind='OTHER')
+        # nid2 = self.add_node(0, 0, 3000, kind='OTHER')
+        nodes = self.stb.find('./StbModel/StbNodes')
+        n1 = ET.Element(STB_NODE, dict(id=str(1), x=str(0), y=str(0), z=str(0), kind='OTHER'))
+        n11 = ET.Element(STB_NODE, dict(id=str(2), x=str(0), y=str(0), z=str(3000), kind='OTHER'))
+        nodes.append(n1)
+        nodes.append(n11)
+
+        cid = 1
+        columns = self.stb.find('./StbModel/StbMembers/StbColumns')
+        col = ET.Element(STB_COLUMN, dict(id=str(cid), idNode_bottom=str(1), idNode_top=str(2), id_section='1',
+                                          kind_structure='S'))
+        columns.append(col)
+
+    def add_section_test(self):
+        sections = self.stb.find('./StbModel/StbSections')
+        sec_s = ET.Element('StbSecSteel')
+        sec_sRB = ET.Element('StbSecRoll-BOX',
+                             dict(name="□-125x125x3.2x6.4", type='STKR', A="125", B="125", t="3.2", R="6.4"))
+        sec_s.append(sec_sRB)
+        sections.append(sec_s)
+        sec_col = ET.Element(STB_SEC_COLUMN_S, dict(id="1", name="C1", kind_column="COLUMN", direction="TRUE"))
+        sec_col_s = ET.Element('StbSecSteelColumn', dict(pos="ALL", shape="□-125x125x3.2x6.4", strength_main="STKR400"))
+        sec_col.append(sec_col_s)
+        sections.append(sec_col)

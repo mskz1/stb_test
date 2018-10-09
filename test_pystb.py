@@ -153,14 +153,13 @@ def test_get_axis_nodes(stb):
                                            125, 126, 127, 128, 129, 130, 235, 236, 237, 238, 239, 240, 241, 242, 243,
                                            244, 245, 246, 247]
 
-
+@pytest.mark.skip
 def test_plot_column(stb):
-    # stb.plot(col=True, gir=True, beam=True, story='RF')
-    # stb.plot(grid=False, col=True, gir=True, beam=True, story='RF')
+    stb.plot(col=True, gir=True, beam=True, story='RF')
+    stb.plot(grid=False, col=True, gir=True, beam=True, story='RF')
 
-    # stb.plot(col=True, gir=True, story='MF')
-    # stb.plot(col=True, gir=True, story='1F')
-    pass
+    stb.plot(col=True, gir=True, story='MF')
+    stb.plot(col=True, gir=True, story='1F')
 
 
 def test_mid_point():
@@ -186,33 +185,22 @@ def test_modify_line_end_point():
 
 
 def test_new_stb():
-    # import xml.etree.ElementTree as ET
-    # st = ET.Element('ST_BRIDGE')
-    # st.set('version', '1.4.00')
-    #
-    # mdl = ET.SubElement(st, 'StbModel')
-    # axes = ET.SubElement(mdl, 'StbAxes')
-    # x1 = ET.SubElement(axes, 'StbX_Axis')
-    # x1.set('id', '1')
-    # x1.set('name', '1')
-    # x1.set('distance', '0')
-    # tree = ET.ElementTree(element=st)
-
     ss = Stb()
     # ss.stb = ET.ElementTree(element=st).getroot()
     ss.new_stb()
     ss.save_stb2("output_new.stb")
-    pass
 
 
 def test_new_stb_grid():
     ss = Stb()
     ss.new_stb()
-    ss.add_grid(STB_X_AXIS, id=1, name=1, distance=0)
-    ss.add_grid(STB_X_AXIS, id=2, name=2, distance=5000.)
-    ss.add_grid(STB_X_AXIS, id=3, name=3, distance=10000.)
-    ss.add_grid(STB_Y_AXIS, id=101, name='A', distance=0)
-    ss.add_grid(STB_Y_AXIS, id=102, name='B', distance=8000.)
+    ss.add_grid(STB_X_AXIS, id=101, name=1, distance=0)
+    ss.add_grid(STB_X_AXIS, id=102, name=2, distance=5000.)
+    ss.add_grid(STB_X_AXIS, id=103, name=3, distance=10000.)
+    ss.add_grid(STB_Y_AXIS, id=1, name='A', distance=0)
+    ss.add_grid(STB_Y_AXIS, id=2, name='B', distance=8000.)
 
+    ss.add_story_test()
+
+    ss.add_col_test()
     ss.save_stb2('output_new_grid.stb')
-    pass

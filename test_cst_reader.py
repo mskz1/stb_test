@@ -41,12 +41,43 @@ def test_load_data():
     assert cst.get_buzai_data('KOBARI', idx=1) == ['B24', 'B25', 'B29', 'B34', 'B39', 'B15']
     assert cst.get_buzai_data('ETC-NOKIGETA', idx=6) == ["C-125x50x20x2.3", "C-125x50x20x3.2"]
 
-
+@pytest.mark.skip
 def test_file_names():
-    # cst = CasstData()
-    # files = cst._buzaikigou_file_names("sample_cst")
-    # # for x in files:
-    # #     print(os.path.basename(x))
+    cst = CasstData()
+    files = cst._buzaikigou_file_names("sample_cst")
     # for x in files:
-    #     print(os.path.basename(x)[:-4].split(sep='_')[-1]) # 拡張子.csvを除き、_で区切られる最後の単語
-    pass
+    #     print(os.path.basename(x))
+    for x in files:
+        print(os.path.basename(x)[:-4].split(sep='_')[-1]) # 拡張子.csvを除き、_で区切られる最後の単語
+
+
+@pytest.mark.skip('試作のため')
+def test_generate_grid_nodes():
+    cst = CasstData()
+    cst.load('sample_cst')
+    xnames, xdists, ynames, ydists = cst.get_grids()
+    # print(cst.gen_xy_coords(xdists, ydists))
+    cst.gen_stb_model()
+
+
+@pytest.mark.skip('ファイル出力ルーチンのため')
+def test_convert_grid():
+    cst = CasstData()
+    cst.load('sample_cst')
+    cst.gen_stb()
+    cst.gen_stb_grids()
+    cst.gen_stb_stories()
+    cst.stb.add_col_test()
+    cst.stb.save_stb2('output_convert_grid.stb')
+
+
+# @pytest.mark.skip('ファイル出力ルーチンのため')
+def test_gen_stb_model():
+    cst = CasstData()
+    cst.load('sample_cst')
+    cst.gen_stb()
+    cst.gen_stb_grids()
+    cst.gen_stb_stories()
+    cst.gen_stb_model()
+    cst.stb.add_section_test()
+    cst.stb.save_stb2('output_stb_col.stb')
