@@ -27,6 +27,14 @@ def get_theta(p1, p2):
 
 
 def get_shortened_points(p1, p2, d=100):
+    """
+    はりの図形表示で、端部にジョイントを示す○を描くため
+    端部座標を縮めた座標を計算する。
+    :param p1:
+    :param p2:
+    :param d:
+    :return:
+    """
     theta = get_theta(p1, p2)
     x1, y1 = p1[0], p1[1]
     x2, y2 = p2[0], p2[1]
@@ -44,8 +52,7 @@ class Stb:
 
     def new_stb(self):
         """
-        STBデータ新規作成
-        :return:
+        STBデータ新規作成 v.1.4
         """
         st = ET.Element('ST_BRIDGE')
         st.set('version', '1.4.00')
@@ -74,6 +81,9 @@ class Stb:
         self.stb = ET.ElementTree(element=st).getroot()
 
     def load_stb(self, file):
+        """
+        ファイルSTBから読み込み
+        """
         with open(file, 'r', encoding='Shift_JIS') as f:
             self.stb = ET.fromstring(f.read())
 
@@ -96,6 +106,9 @@ class Stb:
             f.write(txt)
 
     def get_max_id(self, tag):
+        """
+        指定tag中のidを検索し、最大値を返す
+        """
         ids = []
         if self.stb:
             for d in self.stb.iter(tag):
@@ -231,7 +244,8 @@ class Stb:
         nodes.append(node)
         return id
 
-    def add_node_tmp1(self):
+    def __add_node_tmp1(self):
+        # 不要か
         # 通心生成のため、仮のNodeを作る
         # nodes = self.stb.find('./StbModel/StbNodes')
         # node = ET.Element(STB_NODE, dict(id=str(20000), x=str(0), y=str(0), z=str(0), kind='OTHER'))
@@ -239,6 +253,7 @@ class Stb:
         pass
 
     def add_beam_tmp(self, n1_id, n2_id, name='NA', id_sec=0):
+        # テスト用？
         id = self.get_next_free_member_id()
         beams = self.stb.find('./StbModel/StbMembers/StbBeams')
         beam = ET.Element(STB_BEAM,

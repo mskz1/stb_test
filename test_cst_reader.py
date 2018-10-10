@@ -64,7 +64,7 @@ def test_generate_grid_nodes():
 def test_convert_grid():
     cst = CasstData()
     cst.load('sample_cst')
-    cst.gen_stb()
+    cst.new_stb()
     cst.gen_stb_grids()
     cst.gen_stb_stories()
     cst.stb.add_col_test()
@@ -75,7 +75,7 @@ def test_convert_grid():
 def test_gen_stb_model():
     cst = CasstData()
     cst.load('sample_cst')
-    cst.gen_stb()
+    cst.new_stb()
     cst.gen_stb_grids()
     cst.gen_stb_stories()
     cst.gen_stb_model()

@@ -10,7 +10,7 @@ BUZAI_KIGOU_FOLDER_PATH = "Master"
 
 def sec_cst_to_stb(data, shubetu):
     """
-    casstの断面データからstbへ変換
+    casstの断面データの整理
     :return:辞書のリスト
     戻り値サンプル
     [{'fugou':'C1', 'name':'□P-125x125x4.5', 'A':'125', 'B':'125', 't':'4.5', 'r':'9.0', 'direc':'x'}, {'fugou':'C1K',
@@ -19,24 +19,19 @@ def sec_cst_to_stb(data, shubetu):
     """
     res = []
     if shubetu == 'HASHIRA':  # 角パイプ想定
-        # sid = 1
         for line in data:
             d = line.split(',')
             fugou, name, direc = d[0].strip(), d[5].strip(), d[8].strip()
-            # print('***',fugou, name, direc,'***')
             A = name.split('-')[1].split('x')[0]
             B = name.split('-')[1].split('x')[1]
             t = name.split('-')[1].split('x')[2]
             r = str(float(t) * 2)
-            # res[sid] = [fugou, A, B, t, r, direc]
             res.append(dict(fugou=fugou, name=name, A=A, B=B, t=t, r=r, direc=direc))
-            # sid += 1
             # print(res)
     if shubetu == 'OOBARI' or shubetu == 'KOBARI':
         for line in data:
             d = line.split(',')
             fugou, name = d[0].strip(), d[5].strip()
-            # print(fugou, name)
             A = name.split('-')[1].split('x')[0]
             B = name.split('-')[1].split('x')[1]
             t1 = name.split('-')[1].split('x')[2]
@@ -53,7 +48,6 @@ def sec_cst_to_stb(data, shubetu):
         for line in data:
             d = line.split(',')
             fugou, name = d[0].strip(), d[5].strip()
-            # print(fugou, name)
             if name[0] == '□':
                 A = name.split('-')[1].split('x')[0]
                 B = name.split('-')[1].split('x')[1]
@@ -72,6 +66,12 @@ def sec_cst_to_stb(data, shubetu):
 
 
 def get_sec_id(sections, fugou):
+    """
+    sections中で、符号が一致するデータ位置（1～）を返す。
+    :param sections:list
+    :param fugou:str
+    :return:int
+    """
     for i, s in enumerate(sections):
         if s['fugou'] == fugou:
             return i + 1
@@ -85,7 +85,7 @@ class CasstData:
         self.sec_data = {}
         self.buzai = {}
 
-    def get_free_node_id(self):
+    def _get_free_node_id(self):
         # node id は連続であると仮定
         return (len(self.nodes) + 1)
 
@@ -104,10 +104,16 @@ class CasstData:
             res[section_name] = data
 
     def _load_buzai_data(self, folder_name):
+        """
+        list_buzaikigou_*.csvにマッチするファイルを読み込み、辞書化
+
+        :param folder_name:
+        :return:
+        """
         file_names = glob.glob(os.path.join(folder_name, BUZAI_KIGOU_FOLDER_PATH, 'list_buzaikigou_*.csv'))
         for file_name in file_names:
             with open(file_name) as f:
-                kigou = os.path.basename(file_name)[:-4].split(sep='_')[-1]
+                kigou = os.path.basename(file_name)[:-4].split(sep='_')[-1] # 拡張子.csvを除き、_で区切られる最後の単語
                 lines = f.readlines()[1:]  # １行目は捨てる
                 self.buzai[kigou] = lines
 
@@ -150,6 +156,13 @@ class CasstData:
             return self.sec_data[section]
 
     def get_buzai_data(self, kigou, idx=None):
+        """
+        記号を指定し、データを得る。
+        idを指定しない場合は全体をリストで返す。
+        :param kigou:
+        :param idx:
+        :return:
+        """
         if idx:
             data = self.buzai[kigou]
             if len(data) == 1:
@@ -163,8 +176,10 @@ class CasstData:
             return self.buzai[kigou]
 
     def get_grids(self):
-        # 通り名、距離をリストで返す
-        # ['A', 'B', 'C',...], [0.0, 2000.0, ...],['1', '2', '3'...],[0.0, 1400.0, 3400.0,...]
+        """
+        通り名、および原点からの距離をリストで返す
+        ['1', '2', '3'...], [0.0, 2000.0, ...],['A', 'B', 'C',...],[0.0, 1400.0, 3400.0,...]
+        """
         x_names = []
         y_names = []
         x_dist = []
@@ -186,7 +201,7 @@ class CasstData:
                     y_dist.append(float(dist))
         return x_names, x_dist, y_names, y_dist
 
-    def gen_xy_coords(self, xdata, ydata):
+    def __gen_xy_coords(self, xdata, ydata):
         # 不要か
         res = []
         for x in xdata:
@@ -195,26 +210,40 @@ class CasstData:
             res.append((xdata[0], y))
         return res
 
-    def gen_grid_nodes(self):
+    def __gen_grid_nodes(self):
         # 不要か
         xnames, xdists, ynames, ydists = self.get_grids()
-        xypoints = self.gen_xy_coords(xdists, ydists)
+        xypoints = self.__gen_xy_coords(xdists, ydists)
         nid = len(self.nodes) + 1
         for xy in xypoints:
             self.nodes[nid] = (xy[0], xy[1], 0)
 
-    def gen_stb(self):
+    def new_stb(self):
+        """
+        stb新規生成（初期化）
+        """
         self.stb.new_stb()
 
     def add_node(self, x, y, z):
-        nid = self.get_free_node_id()
+        """
+        座標値から節点を登録
+        :param x: x座標
+        :param y: y座標
+        :param z: z座標
+        :return: 生成した節点番号
+        """
+        nid = self._get_free_node_id()
         self.nodes[nid] = (x, y, z)
         if self.stb:
             self.stb.add_node(nid, x, y, z)
         return nid
 
     def gen_stb_grids(self):
-        self.stb.add_node_tmp1()  # gridにnode_listがないと変換されないため、ダミーとして作る
+        """
+        STBの通心を生成する。
+        Revit2017ではSTBの通心のnode_listに何もないと変換されないため、node1を登録する。
+        """
+        # self.stb.__add_node_tmp1()  # gridにnode_listがないと変換されないため、ダミーとして作る
         xnames, xdists, ynames, ydists = self.get_grids()
         for i, name in enumerate(xnames):
             self.stb.add_grid('StbX_Axis', id=i + 101, name=name, distance=xdists[i])
@@ -222,6 +251,9 @@ class CasstData:
             self.stb.add_grid('StbY_Axis', id=i + 1, name=name, distance=ydists[i])
 
     def _set_story_height(self):
+        """
+        階高を登録する。辞書　名称 -> GLからの高さ
+        """
         names = ['1FL', '2FL', '3FL', '2FLD']
         truss_depth = float(self.get_section_data('KAIDAKA', idx=7))
         heights = [float(self.get_section_data('KAIDAKA', idx=2)), float(self.get_section_data('KAIDAKA', idx=3)),
@@ -231,6 +263,9 @@ class CasstData:
             self.height[name] = heights[i]
 
     def gen_stb_stories(self):
+        """
+        STBの層を生成する。
+        """
         self._set_story_height()
         i = 1
         for k, v in self.height.items():
@@ -239,7 +274,9 @@ class CasstData:
                 i += 1
 
     def gen_stb_model(self):
-        # STBモデルを生成
+        """
+        stbモデルを生成する。
+        """
         self._set_story_height()
 
         buzai_shubetsu = 'HASHIRA'
