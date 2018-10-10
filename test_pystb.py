@@ -127,7 +127,7 @@ def test_add_beam(stb):
     # stb.print_elements(STB_BEAM)
     n1_id = stb.add_node(x=0, y=0, z=1000)
     n2_id = stb.add_node(x=2000, y=0, z=1000)
-    stb.add_beam(n1_id, n2_id, name='V1A', id_sec=18)
+    stb.add_beam_tmp(n1_id, n2_id, name='V1A', id_sec=18)
     # stb.print_elements(STB_BEAM)
     pass
 

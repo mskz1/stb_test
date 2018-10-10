@@ -69,6 +69,7 @@ class Stb:
         strip_footings = ET.SubElement(members, 'StbStrip_Footings')
         piles = ET.SubElement(members, 'StbPiles')
         sections = ET.SubElement(mdl, 'StbSections')
+        sec_s = ET.SubElement(sections, 'StbSecSteel')
         joints = ET.SubElement(mdl, 'StbJoints')
         self.stb = ET.ElementTree(element=st).getroot()
 
@@ -80,7 +81,7 @@ class Stb:
         # new_stbとした場合の仮対応用
         txt = ET.tostring(self.stb, encoding='unicode')
         with open(file, 'w', encoding='Shift_JIS') as f:
-            # f.write('<?xml version="1.0" encoding="Shift_JIS"?>' + chr(10))
+            f.write('<?xml version="1.0" encoding="Shift_JIS"?>' + chr(10))
             f.write((minidom.parseString(txt)).toprettyxml(indent='  '))
             # f.write((minidom.parseString(txt)).toprettyxml(indent='  ',encoding='shift_jis'))
 
@@ -237,16 +238,14 @@ class Stb:
         # nodes.append(node)
         pass
 
-    def add_beam(self, n1_id, n2_id, name='NA', id_sec=0):
+    def add_beam_tmp(self, n1_id, n2_id, name='NA', id_sec=0):
         id = self.get_next_free_member_id()
         beams = self.stb.find('./StbModel/StbMembers/StbBeams')
         beam = ET.Element(STB_BEAM,
                           dict(id=str(id), name=name, idNode_start=str(n1_id), idNode_end=str(n2_id), rotate="0",
-                               id_section=str(id_sec), kind_structure="S", isFoundation="FALSE", offset="0",
-                               level="-50",
-                               offset_start_Z="-50", offset_end_Z="-50", condition_start="PIN", condition_end="PIN"))
+                               level='0', id_section=str(id_sec), kind_structure="S", isFoundation="FALSE", offset="0",
+                               condition_start="PIN", condition_end="PIN"))
         beams.append(beam)
-        pass
 
     def get_min_max_coord(self):
         xc = []
@@ -408,9 +407,23 @@ class Stb:
 
     def add_column(self, id, fugou, b_node_id, t_node_id, sec_id, kind='S'):
         columns = self.stb.find('./StbModel/StbMembers/StbColumns')
-        col = ET.Element(STB_COLUMN,dict(id=str(id), name=str(fugou), idNode_bottom=str(b_node_id),
-                                     idNode_top=str(t_node_id),id_section=str(sec_id), kind_structure=str(kind)))
+        col = ET.Element(STB_COLUMN, dict(id=str(id), name=str(fugou), idNode_bottom=str(b_node_id),
+                                          idNode_top=str(t_node_id), id_section=str(sec_id), kind_structure=str(kind)))
         columns.append(col)
+
+    def add_girder(self, id, fugou, node1, node2, sec_id, kind='S'):
+        girders = self.stb.find('./StbModel/StbMembers/StbGirders')
+        gir = ET.Element(STB_GIRDER, dict(id=str(id)), name=str(fugou), idNode_start=str(node1), idNode_end=str(node2),
+                         id_section=str(sec_id), kind_structure=str(kind))
+        girders.append(gir)
+
+    def add_beam(self,id,fugou,node1,node2,sec_id,kind='S',**kwargs):
+        beams = self.stb.find('./StbModel/StbMembers/StbBeams')
+
+        b = ET.Element(STB_BEAM,dict(id=str(id),name=str(fugou),idNode_start=str(node1),idNode_end=str(node2),
+                                     id_section=str(sec_id),kind_structure=str(kind),**kwargs))
+        beams.append(b)
+
 
     def add_col_test(self):
         # add section
@@ -433,7 +446,8 @@ class Stb:
 
     def add_section_test(self):
         sections = self.stb.find('./StbModel/StbSections')
-        sec_s = ET.Element('StbSecSteel')
+        sec_s = self.stb.find('./StbModel/StbSections/StbSecSteel')
+        # sec_s = ET.Element('StbSecSteel')
         sec_sRB = ET.Element('StbSecRoll-BOX',
                              dict(name="□-125x125x3.2x6.4", type='STKR', A="125", B="125", t="3.2", R="6.4"))
         sec_s.append(sec_sRB)
@@ -442,3 +456,47 @@ class Stb:
         sec_col_s = ET.Element('StbSecSteelColumn', dict(pos="ALL", shape="□-125x125x3.2x6.4", strength_main="STKR400"))
         sec_col.append(sec_col_s)
         sections.append(sec_col)
+
+    def add_section_steel_shape(self, sections):
+        """
+        StbSecSteel要素を追加する
+        TODO:部材種別の追加
+        :param sections:リスト
+        :return:
+        """
+        sec_s = self.stb.find('./StbModel/StbSections/StbSecSteel')
+        for sec in sections:
+            if sec['name'][0] == '□':
+                s = ET.Element('StbSecRoll-BOX',
+                               dict(name=str(sec['name']), type='STKR', A=str(sec['A']), B=str(sec['B']),
+                                    t=str(sec['t']), R=str(sec['r'])))
+            elif sec['name'][0] == 'H':
+                s = ET.Element('StbSecRoll-H',
+                               dict(name=sec['name'], type='H', A=sec['A'], B=sec['B'], t1=sec['t1'], t2=sec['t2'],
+                                    r=sec['r']))
+            elif sec['name'][0] == 'C':
+                s = ET.Element('StbSecRoll-LipC',
+                               dict(name=sec['name'], type='C', H=sec['H'], A=sec['A'], C=sec['C'], t=sec['t']))
+
+            elif sec['name'][0] == '2C':  # 背中あわせとする
+                s = ET.Element('StbSecRoll-LipC', dict(name=sec['name'], type='2C', H=sec['H'],
+                                                       A=sec['A'], C=sec['C'], t=sec['t'], side='TRUE'))
+            # append
+            sec_s.append(s)
+
+    def add_section(self, sections, type, kind_beam=None,sid_delta=0):
+        stb_sec = self.stb.find('./StbModel/StbSections')
+        sub_type = {'StbSecColumn_S': 'StbSecSteelColumn', 'StbSecBeam_S': 'StbSecSteelBeam'}
+        # sid_delta = {'GIRDER': 1, 'BEAM': 101}
+        for i, sec in enumerate(sections):
+            if type == "StbSecColumn_S":
+                s = ET.Element(type, dict(id=str(i + 1), name=sec['fugou']))
+            elif type == 'StbSecBeam_S':
+                s = ET.Element(type, dict(id=str(i + 1+sid_delta), name=sec['fugou'], kind_beam=kind_beam))
+            if type == "StbSecColumn_S":
+                s2 = ET.Element(sub_type[type], dict(pos='ALL', shape=sec['name']))
+            elif type == 'StbSecBeam_S':
+                s2 = ET.Element(sub_type[type], dict(pos='ALL', shape=sec['name']))
+
+            s.append(s2)
+            stb_sec.append(s)

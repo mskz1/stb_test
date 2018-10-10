@@ -11,7 +11,11 @@ BUZAI_KIGOU_FOLDER_PATH = "Master"
 def sec_cst_to_stb(data, shubetu):
     """
     casstの断面データからstbへ変換
-    :return:
+    :return:辞書のリスト
+    戻り値サンプル
+    [{'fugou':'C1', 'name':'□P-125x125x4.5', 'A':'125', 'B':'125', 't':'4.5', 'r':'9.0', 'direc':'x'}, {'fugou':'C1K',
+    [{'fugou':'B44', 'name':'H-446x199x8x12', 'A':'446', 'B':'199', 't1':'8', 't2':'12', 'r':'13'}, {'fugou':'B29',
+    [{'fugou':'P1', 'name':'C-125x50x20x2.3', 'H':'125', 'A':'50', 'C':'20', 't':'2.3'}, {'fugou':'P1K',
     """
     res = []
     if shubetu == 'HASHIRA':  # 角パイプ想定
@@ -19,7 +23,7 @@ def sec_cst_to_stb(data, shubetu):
         for line in data:
             d = line.split(',')
             fugou, name, direc = d[0].strip(), d[5].strip(), d[8].strip()
-            # print(fugou, name, direc)
+            # print('***',fugou, name, direc,'***')
             A = name.split('-')[1].split('x')[0]
             B = name.split('-')[1].split('x')[1]
             t = name.split('-')[1].split('x')[2]
@@ -27,12 +31,12 @@ def sec_cst_to_stb(data, shubetu):
             # res[sid] = [fugou, A, B, t, r, direc]
             res.append(dict(fugou=fugou, name=name, A=A, B=B, t=t, r=r, direc=direc))
             # sid += 1
-        # print(res)
+            # print(res)
     if shubetu == 'OOBARI' or shubetu == 'KOBARI':
         for line in data:
             d = line.split(',')
             fugou, name = d[0].strip(), d[5].strip()
-            print(fugou, name)
+            # print(fugou, name)
             A = name.split('-')[1].split('x')[0]
             B = name.split('-')[1].split('x')[1]
             t1 = name.split('-')[1].split('x')[2]
@@ -44,17 +48,26 @@ def sec_cst_to_stb(data, shubetu):
             if int(A) == 244:
                 r = '13'
             res.append(dict(fugou=fugou, name=name, A=A, B=B, t1=t1, t2=t2, r=r))
-        print(res)
+            # print(res)
+    if shubetu == 'ETC-NOKIGETA':
+        for line in data:
+            d = line.split(',')
+            fugou, name = d[0].strip(), d[5].strip()
+            # print(fugou, name)
+            H = name.split('-')[1].split('x')[0]
+            A = name.split('-')[1].split('x')[1]
+            C = name.split('-')[1].split('x')[2]
+            t = name.split('-')[1].split('x')[3]
+            res.append(dict(fugou=fugou, name=name, H=H, A=A, C=C, t=t))
+        # print(res)
+
+    return res
 
 
-
-
-
-
-
-
-
-    pass
+def get_sec_id(sections, fugou):
+    for i, s in enumerate(sections):
+        if s['fugou'] == fugou:
+            return i + 1
 
 
 class CasstData:
@@ -220,12 +233,16 @@ class CasstData:
         # STBモデルを生成
         self._set_story_height()
 
+        buzai_shubetsu = 'HASHIRA'
         # 柱断面
-        sec_data = self.get_section_data('HASHIRA')
+        sec_data = sec_cst_to_stb(self.get_buzai_data(buzai_shubetsu), buzai_shubetsu)
+        # 断面shapeの登録
+        self.stb.add_section_steel_shape(sec_data)
+        self.stb.add_section(sec_data, 'StbSecColumn_S')
 
         # 柱部材
-        data = self.get_section_data('HASHIRA')
-        cid = 1
+        data = self.get_section_data(buzai_shubetsu)
+        buzai_id = 1
         for line in data:
             itm = line.split(',')
             kai, fugou, xc, yc, sagari = itm[1], itm[3], float(itm[4]), float(itm[5]), float(itm[6])
@@ -236,8 +253,76 @@ class CasstData:
             zc_l = self.height[l_kai]
             n1 = self.add_node(xc, yc, zc_l)
             n2 = self.add_node(xc, yc, zc_u)
-            self.stb.add_column(cid, fugou, n1, n2, '1')
-            cid += 1
+            sid = get_sec_id(sec_data, fugou)
+            self.stb.add_column(buzai_id, fugou, n1, n2, sid)
+            buzai_id += 1
+
+        buzai_shubetsu = 'OOBARI'
+        # 大梁断面
+        sec_data = sec_cst_to_stb(self.get_buzai_data(buzai_shubetsu), buzai_shubetsu)
+        # 断面shapeの登録
+        self.stb.add_section_steel_shape(sec_data)
+        self.stb.add_section(sec_data, 'StbSecBeam_S', 'GIRDER')
+
+        # 大梁部材
+        data = self.get_section_data(buzai_shubetsu)
+        buzai_id = 1
+        for line in data:
+            itm = line.split(',')
+            kai, fugou, x1, y1, x2, y2, dz1, dz2 = itm[1], itm[3], float(itm[4]), float(itm[5]), float(itm[6]), float(
+                itm[7]), float(itm[8]), float(itm[9])
+            z0 = self.height[kai]
+            n1 = self.add_node(x1, y1, z0 - dz1)
+            n2 = self.add_node(x2, y2, z0 - dz2)
+            sid = get_sec_id(sec_data, fugou)
+            self.stb.add_girder(buzai_id, fugou, n1, n2, sid)
+            buzai_id += 1
+
+        buzai_shubetsu = 'KOBARI'
+        # 小梁断面
+        sec_data = sec_cst_to_stb(self.get_buzai_data(buzai_shubetsu), buzai_shubetsu)
+        # 断面shapeの登録
+        sid_delta = 100
+        self.stb.add_section_steel_shape(sec_data)
+        self.stb.add_section(sec_data, 'StbSecBeam_S', 'BEAM', sid_delta)
+
+        # 小梁部材
+        data = self.get_section_data(buzai_shubetsu)
+        buzai_id = 1
+        for line in data:
+            itm = line.split(',')
+            kai, fugou, x1, y1, x2, y2, dz1, dz2 = itm[1], itm[3], float(itm[4]), float(itm[5]), float(itm[6]), float(
+                itm[7]), float(itm[8]), float(itm[9])
+            z0 = self.height[kai]
+            n1 = self.add_node(x1, y1, z0 - dz1)
+            n2 = self.add_node(x2, y2, z0 - dz2)
+            sid = get_sec_id(sec_data, fugou) + sid_delta
+            self.stb.add_beam(buzai_id, fugou, n1, n2, sid)
+            buzai_id += 1
+
+        buzai_shubetsu = 'ETC-NOKIGETA'
+        # 軒桁断面
+        sec_data = sec_cst_to_stb(self.get_buzai_data(buzai_shubetsu), buzai_shubetsu)
+        # 断面shapeの登録
+        sid_delta = 200
+        self.stb.add_section_steel_shape(sec_data)
+        self.stb.add_section(sec_data, 'StbSecBeam_S', 'BEAM', sid_delta)
+        # 部材
+        data = self.get_section_data('NOKIKETA_SAKUZU')
+        buzai_id = 1
+        for line in data:
+            itm = line.split(',')
+            kai, fugou, x1, y1, x2, y2, dz1, dz2 = itm[1], itm[3], float(itm[4]), float(itm[5]), float(itm[6]), float(
+                itm[7]), float(itm[8]), float(itm[9])
+            z0 = self.height[kai]
+            n1 = self.add_node(x1, y1, z0 - dz1)
+            n2 = self.add_node(x2, y2, z0 - dz2)
+            sid = get_sec_id(sec_data, fugou) + sid_delta
+            self.stb.add_beam(buzai_id, fugou, n1, n2, sid, rotate='90.0') # revitにいくと、-90となる
+            buzai_id += 1
+
+
+
 
 
 if __name__ == '__main__':
