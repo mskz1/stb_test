@@ -49,17 +49,24 @@ def sec_cst_to_stb(data, shubetu):
                 r = '13'
             res.append(dict(fugou=fugou, name=name, A=A, B=B, t1=t1, t2=t2, r=r))
             # print(res)
-    if shubetu == 'ETC-NOKIGETA':
+    if shubetu == 'ETC-NOKIGETA' or shubetu == 'KOYATSUNAGI':
         for line in data:
             d = line.split(',')
             fugou, name = d[0].strip(), d[5].strip()
             # print(fugou, name)
-            H = name.split('-')[1].split('x')[0]
-            A = name.split('-')[1].split('x')[1]
-            C = name.split('-')[1].split('x')[2]
-            t = name.split('-')[1].split('x')[3]
-            res.append(dict(fugou=fugou, name=name, H=H, A=A, C=C, t=t))
-        # print(res)
+            if name[0] == '□':
+                A = name.split('-')[1].split('x')[0]
+                B = name.split('-')[1].split('x')[1]
+                t = name.split('-')[1].split('x')[2]
+                r = str(float(t) * 2)
+                res.append(dict(fugou=fugou, name=name, A=A, B=B, t=t, r=r))
+            else:
+                H = name.split('-')[1].split('x')[0]
+                A = name.split('-')[1].split('x')[1]
+                C = name.split('-')[1].split('x')[2]
+                t = name.split('-')[1].split('x')[3]
+                res.append(dict(fugou=fugou, name=name, H=H, A=A, C=C, t=t))
+                # print(res)
 
     return res
 
@@ -215,9 +222,11 @@ class CasstData:
             self.stb.add_grid('StbY_Axis', id=i + 1, name=name, distance=ydists[i])
 
     def _set_story_height(self):
-        names = ['1FL', '2FL', '3FL']
+        names = ['1FL', '2FL', '3FL', '2FLD']
+        truss_depth = float(self.get_section_data('KAIDAKA', idx=7))
         heights = [float(self.get_section_data('KAIDAKA', idx=2)), float(self.get_section_data('KAIDAKA', idx=3)),
-                   float(self.get_section_data('KAIDAKA', idx=4))]
+                   float(self.get_section_data('KAIDAKA', idx=4)),
+                   float(self.get_section_data('KAIDAKA', idx=3)) - truss_depth]
         for i, name in enumerate(names):
             self.height[name] = heights[i]
 
@@ -309,7 +318,7 @@ class CasstData:
         self.stb.add_section(sec_data, 'StbSecBeam_S', 'BEAM', sid_delta)
         # 部材
         data = self.get_section_data('NOKIKETA_SAKUZU')
-        buzai_id = 1
+        # buzai_id = 1
         for line in data:
             itm = line.split(',')
             kai, fugou, x1, y1, x2, y2, dz1, dz2 = itm[1], itm[3], float(itm[4]), float(itm[5]), float(itm[6]), float(
@@ -318,11 +327,30 @@ class CasstData:
             n1 = self.add_node(x1, y1, z0 - dz1)
             n2 = self.add_node(x2, y2, z0 - dz2)
             sid = get_sec_id(sec_data, fugou) + sid_delta
-            self.stb.add_beam(buzai_id, fugou, n1, n2, sid, rotate='90.0') # revitにいくと、-90となる
+            self.stb.add_beam(buzai_id, fugou, n1, n2, sid, rotate='90.0')  # revitにいくと、-90となる
             buzai_id += 1
 
+        buzai_shubetsu = 'KOYATSUNAGI'
+        # 軒桁断面
+        sec_data = sec_cst_to_stb(self.get_buzai_data(buzai_shubetsu), buzai_shubetsu)
+        # 断面shapeの登録
+        sid_delta = 300
+        self.stb.add_section_steel_shape(sec_data)
+        self.stb.add_section(sec_data, 'StbSecBeam_S', 'BEAM', sid_delta)
 
-
+        # 部材
+        data = self.get_section_data(buzai_shubetsu)
+        # buzai_id = 1
+        for line in data:
+            itm = line.split(',')
+            kai, fugou, x1, y1, x2, y2, dz1, dz2 = itm[1], itm[3], float(itm[4]), float(itm[5]), float(itm[6]), float(
+                itm[7]), float(itm[8]), float(itm[9])
+            z0 = self.height[kai]
+            n1 = self.add_node(x1, y1, z0 - dz1)
+            n2 = self.add_node(x2, y2, z0 - dz2)
+            sid = get_sec_id(sec_data, fugou) + sid_delta
+            self.stb.add_beam(buzai_id, fugou, n1, n2, sid)
+            buzai_id += 1
 
 
 if __name__ == '__main__':

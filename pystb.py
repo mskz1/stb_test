@@ -478,9 +478,11 @@ class Stb:
                 s = ET.Element('StbSecRoll-LipC',
                                dict(name=sec['name'], type='C', H=sec['H'], A=sec['A'], C=sec['C'], t=sec['t']))
 
-            elif sec['name'][0] == '2C':  # 背中あわせとする
+            elif sec['name'][:2] == '2C':  # 背中あわせとする
                 s = ET.Element('StbSecRoll-LipC', dict(name=sec['name'], type='2C', H=sec['H'],
                                                        A=sec['A'], C=sec['C'], t=sec['t'], side='TRUE'))
+            else:
+                print(sec['name'])
             # append
             sec_s.append(s)
 
